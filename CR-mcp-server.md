@@ -1,6 +1,6 @@
 # CR: docx4j MCP server (expose the engine to AI agents via Model Context Protocol)
 
-Status: PHASE 1 DONE (proposed, reviewed, spiked and core tools built 2026-09-01); phase 2 next
+Status: PHASE 2 DONE (proposed, reviewed, spiked, phases 1-2 built 2026-09-01); phase 3 (packaging/distribution) next
 Scope: a NEW satellite artifact (`docx4j-mcp`) — no changes to
 docx4j-core beyond what the tools need; lives in its own repo, `plutext/docx4j-mcp`
 (decided 2026-09-01, §7).  Phase 0 findings are in §10.
@@ -382,9 +382,10 @@ modules, +17 MB over phase 0).
   `yyyy-MM-dd` (that line is commented out in docx4j; day-first `dd/MM/yyyy`,
   `yyyyMMdd`, `1 September 2026` work).  Handled server-side: `describe_template`
   lists `merge_field_formats` and says which input shapes work; `fill_template`
-  turns the NPE into a message naming the formatted fields.  **docx4j follow-up
-  (not this repo)**: accept ISO dates in the inferencer, and fail with a message
-  instead of NPE.
+  turns the NPE into a message naming the formatted fields.  **Fixed in docx4j
+  the same day** (`5314fab9c`: ISO 8601 accepted; an unparseable value keeps
+  the literal value and logs a warning instead of NPE); the server-side
+  explanation stays as belt and braces.
 - **PDF**: default `IdentityPlusMapper` plus `PhysicalFonts.discoverJarFonts()`
   at warm-up picks up the bundled croscore/crosextra/liberation/symbol fonts;
   the tool reports `font_substitutions` (eg "Times New Roman -> Tinos Regular")
@@ -413,10 +414,52 @@ modules, +17 MB over phase 0).
   `AbstractWriterRegistry - Cannot convert org.docx4j.wml.Tbl`.  Fix belongs in
   docx4j: emit gridCol widths in `MarkdownToWmlVisitor` (equal split of the
   text width is what Word would do), and make `AbstractTableWriter` tolerate a
-  missing width instead of dropping the whole table.  Until then,
-  `markdown_to_docx` → `convert_to_pdf` loses tables; `docx_to_markdown` and
-  Word itself are unaffected.  Not worked around in this server.
+  missing width instead of dropping the whole table.  **Fixed in docx4j the
+  same day** (`c6ce52cef`, both sides); no workaround needed here.
 - **Not done / deferred**: `--log-file`; `structuredContent`'s companion
   `outputSchema` (declared none, so clients get untyped JSON); `mcp-test`-based
   in-process end-to-end test (still shell-scripted); resources/prompts.
+
+## 12. Phase 2 findings
+
+Built 2026-09-01.  Eight tools, 28 tests, shaded jar 47.9 MB (+4 MB for
+ImportXHTML-core, openhtmltopdf, pdfbox, xerces, jsoup).
+
+- **ImportXHTML dependency**: `docx4j-ImportXHTML-core` 17.0.3-SNAPSHOT from
+  the local repo, installed with `-Dgpg.skip=true -Dversion.docx4j=17.0.4-SNAPSHOT`
+  (its parent pom signs by default; its `version.docx4j` is 17.0.3-SNAPSHOT,
+  which is not in `.m2`).  Plain compile-scope dependency in the fat jar — the
+  "optional / reflection" idea from §2 buys nothing for a shaded artifact.
+  Its docx4j-JAXB-ReferenceImpl dependency is excluded (we bring 17.0.4).
+  Still needs the ImportXHTML 17.0.4 release before phase 3 can ship (§2).
+- **Loose HTML**: `XHTMLImporterImpl.convert(String)` needs well-formed XML
+  (`XMLResource.load` → SAXParseException on `<br>`, unclosed `<li>`/`<p>`,
+  `<table border=1>`).  jsoup normalises to XHTML first
+  (`Syntax.xml`, `EscapeMode.xhtml`), which also gives a DOM to enforce the
+  §6 posture: `<script>` removed; `<link>` removed (remote href reported);
+  `<img>` with http(s)/ftp/`//` src removed and reported; `data:` kept;
+  relative/absolute file srcs resolved against `base_path` (default:
+  `input_path`'s directory) and the roots, else dropped with a reason.  The
+  importer's own user agent would otherwise fetch remote images.
+- **Headings**: ImportXHTML maps `h1..h6` to the package's "heading N" styles
+  only with `docx4j-ImportXHTML.Element.Heading.MapToStyle=true` (default
+  false → bold paragraphs).  Shipped as `docx4j-ImportXHTML.properties` on the
+  classpath (server-wide, like `docx4j.properties`).  docx4j's default styles
+  part has the heading styles, so it works without a template too.
+- **`mode: altchunk`**: `MainDocumentPart.addAltChunk(AltChunkType.Xhtml,
+  bytes)` on the (normalised) HTML — Word converts on open.  Exposed because
+  Word's HTML import is the fidelity ceiling; documented that docx4j cannot
+  render it to PDF (so convert first if a PDF is wanted).
+- **`convert_to_html`**: `HTMLSettings` + `Docx4J.toHTML(settings, os,
+  FLAG_EXPORT_PREFER_NONXSL)`; `image_dir_path` with a relative
+  `imageTargetUri` when `output_path` is given; inline result honours the cap.
+  Output is XHTML 1.0 Transitional with the document's styles as CSS.
+- **Smoke (shaded jar, stdio)**: tools/list (8) → html_to_docx (loose HTML with
+  list, table, remote image → warning) → convert_to_pdf → convert_to_html →
+  markdown_to_docx (table) → convert_to_pdf: all `isError: false`; the
+  markdown table now renders in the PDF (docx4j `c6ce52cef`).
+- **Phase 3 inputs** from phases 1-2: the shaded jar is ~48 MB and the
+  handshake costs ~1.4 s of warm-up; both fine for a local stdio server but
+  worth stating on the website page.  Registry listing needs a released
+  docx4j 17.0.4 and ImportXHTML 17.0.4 on Central.
 

@@ -65,7 +65,8 @@ public final class Docx4jMcpServer {
 				.serverInfo(NAME, VERSION)
 				.instructions("docx4j tools for Word documents. Typical flows: describe_template then fill_template "
 						+ "to produce a document from a template; markdown_to_docx to author a new document; "
-						+ "docx_to_markdown to read one; convert_to_pdf to render. All file paths must be inside "
+						+ "docx_to_markdown to read one; html_to_docx / convert_to_html for HTML in and out; "
+						+ "convert_to_pdf to render. All file paths must be inside "
 						+ "the allowed roots: " + paths.roots() + ". Writing tools refuse to overwrite unless "
 						+ "overwrite: true. Inline text results are capped at " + args.maxInlineChars()
 						+ " chars; pass output_path for larger results.")
@@ -76,6 +77,8 @@ public final class Docx4jMcpServer {
 						ConvertToPdfTool.spec(config),
 						MarkdownToDocxTool.spec(config),
 						DocxToMarkdownTool.spec(config),
+						HtmlToDocxTool.spec(config),
+						ConvertToHtmlTool.spec(config),
 						ExtractTextTool.spec(config))
 				.build();
 

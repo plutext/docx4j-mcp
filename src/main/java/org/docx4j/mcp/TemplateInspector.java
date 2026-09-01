@@ -116,8 +116,8 @@ final class TemplateInspector {
 				how = "Mail-merge template. Pass 'data' to fill_template as a JSON object mapping each name in "
 						+ "merge_fields to its value (names are matched case-insensitively)."
 						+ (formats.isEmpty() ? "" : " Fields listed in merge_field_formats carry a date (\\@) or "
-								+ "number (\\#) format switch: give dates as 20260901, 01/09/2026 (day first) or 1 September 2026 "
-								+ "(plain ISO 2026-09-01 is NOT recognised), and numbers as plain digits like 1234.5.");
+								+ "number (\\#) format switch: give dates as 2026-09-01, 20260901, 01/09/2026 (day first) or "
+								+ "1 September 2026, and numbers as plain digits like 1234.5.");
 			}
 			default -> {
 				dataFormat = null;

@@ -140,7 +140,7 @@ final class FillTemplateTool {
 				});
 				throw new ToolArgumentException("merge failed: " + e.getMessage()
 						+ (formatted.isEmpty() ? "" : ". These fields have format switches and need parseable values "
-								+ "(dates as 20260901, 01/09/2026 day-first, or 1 September 2026; numbers as plain digits): "
+								+ "(dates as 2026-09-01, 20260901, 01/09/2026 day-first, or 1 September 2026; numbers as plain digits): "
 								+ formatted));
 			}
 			meta.put("mode", "mail_merge");

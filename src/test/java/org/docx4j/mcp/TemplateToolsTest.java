@@ -152,11 +152,25 @@ class TemplateToolsTest {
 	}
 
 	@Test
-	void unparseableDateIsExplained(@TempDir Path tmp) {
-		ToolArgumentException e = assertThrows(ToolArgumentException.class, () -> FillTemplateTool.run(config(tmp), args(
-				"template_path", fixture("mergefield.docx"), "data", Map.of("yourdate", "not a date"),
-				"output_path", tmp.resolve("o.docx").toString())));
-		assertTrue(e.getMessage().contains("yourdate"), e.getMessage());
+	void unparseableDateIsKeptLiterally(@TempDir Path tmp) throws Exception {
+		// docx4j 5314fab9c: an unparseable value for a \\@ field keeps the value (previously NPE)
+		Path out = tmp.resolve("o.docx");
+		CallToolResult r = FillTemplateTool.run(config(tmp), args(
+				"template_path", fixture("mergefield.docx"), "data", Map.of("yourdate", "not a date", "yournumber", "2026-09-01"),
+				"output_path", out.toString()));
+		assertEquals(Boolean.FALSE, r.isError(), text(r));
+		String t = ExtractTextTool.extract(out);
+		assertTrue(t.contains("not a date"), t);
+	}
+
+	@Test
+	void isoDateIsAccepted(@TempDir Path tmp) throws Exception {
+		Path out = tmp.resolve("iso.docx");
+		CallToolResult r = FillTemplateTool.run(config(tmp), args(
+				"template_path", fixture("mergefield.docx"), "data", Map.of("yourdate", "2026-09-01"),
+				"output_path", out.toString()));
+		assertEquals(Boolean.FALSE, r.isError(), text(r));
+		assertTrue(ExtractTextTool.extract(out).contains("September 01, 2026"), ExtractTextTool.extract(out));
 	}
 
 	@Test

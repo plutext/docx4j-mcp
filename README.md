@@ -4,13 +4,16 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) server that exposes
 [docx4j](https://www.docx4java.org/)'s engine to AI agents: read, convert and fill
 Word (.docx) documents from Claude Desktop, Claude Code, or any MCP client.
 
-**Status: phase 1** — the core tools work over stdio (see below).  The plan,
+**Status: phase 2** — core, Markdown and HTML tools work over stdio (see below).  The plan,
 tool surface and phasing are in [CR-mcp-server.md](CR-mcp-server.md).
 
 ## Build
 
-Requires JDK 17+ and a locally installed docx4j `17.0.4-SNAPSHOT`
-(`mvn install -DskipTests` in the docx4j reactor) until 17.0.4 is released.
+Requires JDK 17+ and, until docx4j 17.0.4 is released, locally installed
+snapshots: docx4j `17.0.4-SNAPSHOT` (`mvn install -DskipTests` in the docx4j
+reactor) and docx4j-ImportXHTML-core `17.0.3-SNAPSHOT` (`mvn install -DskipTests
+-Dgpg.skip=true -Dversion.docx4j=17.0.4-SNAPSHOT -pl docx4j-ImportXHTML-core -am`
+in the ImportXHTML repo).
 
 ```bash
 mvn package            # -> target/docx4j-mcp.jar (shaded, runnable)
@@ -64,10 +67,11 @@ otherwise write to `output_path` or truncate with a marker.
 | `convert_to_pdf` | docx → PDF via XSL-FO / Apache FOP; reports font substitutions. Bundles metric-compatible fonts (Carlito, Caladea, Liberation, Tinos…). |
 | `markdown_to_docx` | Markdown → properly styled docx (headings, numbering, GFM tables, footnotes, task lists, TeX math). Optional `styles_template_path`. |
 | `docx_to_markdown` | docx → Markdown (structure preserved). Options: `tracked_changes` accept/markup, `image_dir_path`. |
+| `html_to_docx` | HTML → docx via docx4j-ImportXHTML. Loose HTML accepted (normalised with jsoup); `h1`–`h6` map to heading styles; optional `styles_template_path`; `mode: altchunk` embeds the HTML for Word to convert on open. Remote images/stylesheets are never fetched. |
+| `convert_to_html` | docx → standalone HTML (visitor exporter; `image_dir_path` for images). |
 | `extract_text` | Plain text, one line per paragraph/table. |
 
 Writers take `output_path` and refuse to overwrite unless `overwrite: true`.
-Planned next (phase 2): `html_to_docx`, `convert_to_html`.
 
 ## Example (Claude Code)
 
