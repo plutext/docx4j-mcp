@@ -1,6 +1,6 @@
 # CR: docx4j MCP server (expose the engine to AI agents via Model Context Protocol)
 
-Status: PHASE 0 DONE (proposed, reviewed and spiked 2026-09-01); phase 1 next
+Status: PHASE 1 DONE (proposed, reviewed, spiked and core tools built 2026-09-01); phase 2 next
 Scope: a NEW satellite artifact (`docx4j-mcp`) — no changes to
 docx4j-core beyond what the tools need; lives in its own repo, `plutext/docx4j-mcp`
 (decided 2026-09-01, §7).  Phase 0 findings are in §10.
@@ -344,3 +344,79 @@ Spike outcome (same day; code in this repo, `src/main/java/org/docx4j/mcp`):
 - Not done (deliberately): resource/prompt capabilities, `structuredContent`,
   the `mcp-test` module for an in-process client (worth a look for the phase 1
   end-to-end test instead of the shell-scripted smoke test).
+
+## 11. Phase 1 findings
+
+Built 2026-09-01 (same day as phase 0).  Six tools, 21 JUnit tests against the tool
+logic, shaded jar 43.7 MB (now includes export-fo/FOP and the four bundled font
+modules, +17 MB over phase 0).
+
+- **Tool surface as shipped**: `describe_template`, `fill_template`,
+  `convert_to_pdf`, `markdown_to_docx`, `docx_to_markdown`, `extract_text`.
+  Every writer takes `output_path` + `overwrite`; every inline-text tool honours
+  `--max-inline-chars` (default 200k) and falls back to `output_path` / a
+  truncation marker (`meta.truncated`).
+- **`describe_template` result shape** (JSON text + `structuredContent`):
+  `kind` (opendope | content_controls | mail_merge | none), `data_format` (xml |
+  json), `how_to_fill` (one paragraph the agent can act on), `skeleton_xml`,
+  `xpaths[]`, `conditions[]` (rendered as readable expressions, xpaths inlined),
+  `content_controls[]` (tag, title, role repeat/condition/bind/plain, binding,
+  part), `merge_fields[]`, `merge_field_formats{}`, `document{}` (paragraphs,
+  tables, styles/fonts in use).  The **skeleton is the template's own custom XML
+  part** (the designer's sample data), pretty-printed — no need to synthesise one
+  from the xpaths, and it is exactly what OpenDoPE authoring tools leave behind.
+- **`fill_template` dispatch**: `data` is XML (string starting with `<`) →
+  `Docx4J.bind` with INSERT|BIND (+REMOVE_SDT, +REMOVE_XML by default); `data` is
+  a JSON object (or a JSON string) → `MailMerger.performMerge`.  Mismatches are
+  explained ("this template has MERGEFIELDs [..] — pass data as a JSON object").
+  Mail merge reports `missing_fields` and `unused_keys`; names match
+  case-insensitively, mirroring `DataFieldName`.
+- **MERGEFIELD discovery** reuses docx4j's own pieces
+  (`FieldsPreprocessor.complexifyFields` → `ComplexFieldLocator` →
+  `canonicalise` → `MailMerger.getDatafieldNameFromInstr`, reached via a
+  package-private subclass) so the names agree with what the merge will match.
+  Headers/footers included.
+- **Format switches bite**: a `\@` date switch makes docx4j's
+  `FormattingSwitchHelper` NPE ("date must not be null") on an unparseable
+  value, and the default `DateFormatInferencer` does **not** accept ISO
+  `yyyy-MM-dd` (that line is commented out in docx4j; day-first `dd/MM/yyyy`,
+  `yyyyMMdd`, `1 September 2026` work).  Handled server-side: `describe_template`
+  lists `merge_field_formats` and says which input shapes work; `fill_template`
+  turns the NPE into a message naming the formatted fields.  **docx4j follow-up
+  (not this repo)**: accept ISO dates in the inferencer, and fail with a message
+  instead of NPE.
+- **PDF**: default `IdentityPlusMapper` plus `PhysicalFonts.discoverJarFonts()`
+  at warm-up picks up the bundled croscore/crosextra/liberation/symbol fonts;
+  the tool reports `font_substitutions` (eg "Times New Roman -> Tinos Regular")
+  and `fonts_unmapped` (eg Aptos, Aptos Display — Office 2023's defaults have no
+  metric-compatible free font, so expect this often).  Visitor exporter by
+  default; `use_xslt: true` selects the XSLT pathway.
+- **Markdown**: `styles_template_path` = load the template, clear the body,
+  `MarkdownImporter.importToMainDocumentPart` — styles, numbering, sectPr and
+  headers/footers survive.  Import issues (constructs kept literally) are
+  returned in the result.  Export `tracked_changes` accept|markup and
+  `image_dir_path` (relative image URIs when `output_path` is given).
+- **Warm-up** (before the transport starts): create+marshal a tiny package
+  (JAXB + XML parser statics) and font discovery; see the smoke-test timings
+  below.  Runs before `initialize` is answered, so the client sees a slower
+  handshake but never a slow first call.
+- **Smoke test (shaded jar, scripted stdio)**: initialize → tools/list (6) →
+  describe_template → fill_template (repeat + condition) → markdown_to_docx →
+  convert_to_pdf → docx_to_markdown, all `isError: false`; warm-up 0.84 s JAXB +
+  0.65 s fonts (1246 host fonts + 32 bundled) before the handshake.
+- **docx4j bug found by the markdown→PDF flow (hand-off to the docx4j repo)**:
+  a table built by `docx4j-markdown` is silently dropped by both PDF pathways
+  (and by extension HTML).  Cause: the importer emits `<w:gridCol/>` without
+  `w:w` (Word tolerates it), and
+  `AbstractTableWriter.createColumns` (line 338) does
+  `TblGridCol.getW().intValue()` → NPE, caught and logged as
+  `AbstractWriterRegistry - Cannot convert org.docx4j.wml.Tbl`.  Fix belongs in
+  docx4j: emit gridCol widths in `MarkdownToWmlVisitor` (equal split of the
+  text width is what Word would do), and make `AbstractTableWriter` tolerate a
+  missing width instead of dropping the whole table.  Until then,
+  `markdown_to_docx` → `convert_to_pdf` loses tables; `docx_to_markdown` and
+  Word itself are unaffected.  Not worked around in this server.
+- **Not done / deferred**: `--log-file`; `structuredContent`'s companion
+  `outputSchema` (declared none, so clients get untyped JSON); `mcp-test`-based
+  in-process end-to-end test (still shell-scripted); resources/prompts.
+

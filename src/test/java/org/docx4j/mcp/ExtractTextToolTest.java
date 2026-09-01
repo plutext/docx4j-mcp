@@ -1,43 +1,57 @@
 package org.docx4j.mcp;
 
+import static org.docx4j.mcp.TestSupport.args;
+import static org.docx4j.mcp.TestSupport.config;
+import static org.docx4j.mcp.TestSupport.fixture;
+import static org.docx4j.mcp.TestSupport.text;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
-import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
-import io.modelcontextprotocol.spec.McpSchema.TextContent;
 
-/** Tool logic tested directly (CR §8 phase 1 testing approach): no MCP client needed. */
 class ExtractTextToolTest {
-
-	private static final Path RESOURCES = Path.of("src/test/resources");
-	private static final PathPolicy PATHS = new PathPolicy(List.of(RESOURCES));
 
 	@Test
 	void extractsParagraphText() throws Exception {
-		String text = ExtractTextTool.extract(PATHS, Map.of("input_path", "src/test/resources/sample.docx"));
-		assertTrue(text.startsWith("Title\n"), text);
-		assertTrue(text.contains("\nSection 1\n"), text);
+		CallToolResult r = ExtractTextTool.run(config(), args("input_path", fixture("sample.docx")));
+		assertEquals(Boolean.FALSE, r.isError());
+		String t = text(r);
+		assertTrue(t.startsWith("Title\n"), t);
+		assertTrue(t.contains("\nSection 1\n"), t);
 	}
 
 	@Test
-	void pathOutsideRootIsRejectedBeforeLoading() {
-		ToolArgumentException e = assertThrows(ToolArgumentException.class,
-				() -> ExtractTextTool.extract(PATHS, Map.of("input_path", "pom.xml")));
+	void pathOutsideRootIsRejected() {
+		ToolArgumentException e = org.junit.jupiter.api.Assertions.assertThrows(ToolArgumentException.class,
+				() -> ExtractTextTool.run(config(), args("input_path", "pom.xml")));
 		assertTrue(e.getMessage().contains("outside the allowed roots"), e.getMessage());
 	}
 
 	@Test
-	void handlerReportsBadArgumentsAsIsError() {
-		CallToolResult r = ExtractTextTool.handler(PATHS).apply(null, new CallToolRequest("extract_text", Map.of()));
+	void specHandlerReportsBadArgumentsAsIsError() {
+		ServerConfig c = config();
+		CallToolResult r = ExtractTextTool.spec(c).callHandler()
+				.apply(null, new io.modelcontextprotocol.spec.McpSchema.CallToolRequest("extract_text", java.util.Map.of()));
 		assertEquals(Boolean.TRUE, r.isError());
-		assertEquals("input_path is required", ((TextContent) r.content().get(0)).text());
+		assertEquals("input_path is required", text(r));
+	}
+
+	@Test
+	void largeResultGoesToOutputPathWhenCapped(@TempDir Path tmp) throws Exception {
+		ServerConfig small = new ServerConfig(config(tmp).paths(), 200, config().mapper());
+		Path out = tmp.resolve("text.txt");
+		CallToolResult r = ExtractTextTool.run(small, args("input_path", fixture("sample.docx"), "output_path", out.toString()));
+		assertTrue(text(r).startsWith("Wrote"), text(r));
+		assertTrue(Files.size(out) > 200);
+		// and truncated inline when no output_path
+		CallToolResult r2 = ExtractTextTool.run(small, args("input_path", fixture("sample.docx")));
+		assertTrue(text(r2).contains("[TRUNCATED"), text(r2));
+		assertEquals(Boolean.TRUE, r2.meta().get("truncated"));
 	}
 }

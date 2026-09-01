@@ -6,8 +6,9 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * The path allow-list (CR §6): every path parameter must resolve (symlinks followed)
- * inside one of the roots given at server start.  There is no default root.
+ * The path allow-list (CR §6): every path parameter, inputs and outputs alike, must
+ * resolve (symlinks followed) inside one of the roots given at server start.  There is
+ * no default root.
  */
 public final class PathPolicy {
 
@@ -24,11 +25,45 @@ public final class PathPolicy {
 		return roots;
 	}
 
-	/** Resolve an input path that must already exist. */
+	/** Resolve an input path that must already exist as a regular file. */
 	public Path resolveExisting(String param, String value) {
 		Path p = resolve(param, value);
 		if (!Files.isRegularFile(p)) {
 			throw new ToolArgumentException(param + ": not a file: " + value);
+		}
+		return p;
+	}
+
+	/** Resolve a directory path, creating it if necessary. */
+	public Path resolveDirectory(String param, String value) {
+		Path p = resolve(param, value);
+		if (Files.exists(p) && !Files.isDirectory(p)) {
+			throw new ToolArgumentException(param + ": not a directory: " + value);
+		}
+		try {
+			Files.createDirectories(p);
+		} catch (IOException e) {
+			throw new ToolArgumentException(param + ": cannot create directory " + value + ": " + e.getMessage());
+		}
+		return p;
+	}
+
+	/**
+	 * Resolve an output path: under a root, not an existing file unless {@code overwrite},
+	 * parent directories created.
+	 */
+	public Path resolveOutput(String param, String value, boolean overwrite) {
+		Path p = resolve(param, value);
+		if (Files.isDirectory(p)) {
+			throw new ToolArgumentException(param + ": " + value + " is a directory");
+		}
+		if (Files.exists(p) && !overwrite) {
+			throw new ToolArgumentException(param + ": " + value + " already exists; pass overwrite: true to replace it");
+		}
+		try {
+			Files.createDirectories(p.getParent());
+		} catch (IOException e) {
+			throw new ToolArgumentException(param + ": cannot create parent directory of " + value + ": " + e.getMessage());
 		}
 		return p;
 	}

@@ -65,6 +65,37 @@
 			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
 			<version>${docx4j.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-markdown</artifactId>
+			<version>${docx4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo</artifactId>
+			<version>${docx4j.version}</version>
+		</dependency>
+		<!-- metric-compatible substitutes for the common Microsoft fonts, so PDFs look right on a bare host -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-croscore</artifactId>
+			<version>${docx4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-crosextra</artifactId>
+			<version>${docx4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-liberation</artifactId>
+			<version>${docx4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo-fonts-symbol</artifactId>
+			<version>${docx4j.version}</version>
+		</dependency>
 
 		<!-- logging: everything to stderr; stdout belongs to the MCP stdio transport -->
 		<dependency>
