@@ -1,0 +1,15 @@
+<configuration>
+	<!-- stdout is the MCP stdio transport: NEVER log there. -->
+	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.err</target>
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} %-5level %logger{24} - %msg%n</pattern>
+		</encoder>
+	</appender>
+	<logger name="org.docx4j" level="WARN"/>
+	<logger name="org.docx4j.mcp" level="INFO"/>
+	<logger name="io.modelcontextprotocol" level="INFO"/>
+	<root level="WARN">
+		<appender-ref ref="STDERR"/>
+	</root>
+</configuration>
