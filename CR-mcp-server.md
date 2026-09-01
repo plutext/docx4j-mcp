@@ -257,9 +257,49 @@ for this channel — flagging, not designing, here.
    logic), plus one end-to-end stdio smoke test.
 2. **Conversion & authoring** (S-M): `html_to_docx`, `convert_to_html`;
    ImportXHTML optional-dependency handling; needs ImportXHTML at 17.0.4.
-3. **Packaging & distribution** (S-M): shaded runnable jar, client config
-   snippets, README + website page (fits the "Why docx4j" family), registry
-   listing.  This is the ship-it milestone.
+3. **Packaging & distribution** (M): the ship-it milestone.  Discovery in 2026
+   is directory- and client-driven (humans find servers in the official MCP
+   Registry, the Claude Desktop Connectors menu, Claude Code plugin
+   marketplaces and aggregator directories; agents only "discover" a server
+   once a human has installed it, via `tools/list` and our `instructions`
+   string), so packaging has to fit those channels.  Constraint that shapes
+   everything: the official registry accepts only npm, pypi, cargo, nuget,
+   oci and mcpb package types — there is no jar/Maven type — so a Java server
+   ships as an **`.mcpb` bundle** and/or an **OCI image**.
+   1. **`.mcpb` bundle** (MCP Bundle; formerly `.dxt`): zip of `manifest.json`
+      + the shaded jar; the manifest declares the `java -jar` command and a
+      user-configured `roots` setting (mapped to `--root`), so the allow-list
+      survives one-click install.  Built by CI on tag; published as a GitHub
+      Release asset (an allowlisted host for the registry's `mcpb` type, which
+      also wants the SHA-256).  Serves Claude Desktop one-click install and
+      the registry at once.  JRE remains a prerequisite; a jlink-bundled
+      variant (~+40 MB) is a follow-up gated on adoption.
+   2. **OCI image** (`ghcr.io/plutext/docx4j-mcp`): JRE + jar, stdio
+      entrypoint, roots mounted as volumes.  Second registry package type,
+      and the natural base for phase 5 (HTTP).
+   3. **Claude Code plugin**: `.claude-plugin/plugin.json` + `.mcp.json` +
+      a **skill** for the describe→fill and markdown/html authoring
+      workflows.  The skill is the one place agent-side discovery genuinely
+      happens today, so it carries the "when to use which tool" guidance
+      rather than the tool descriptions alone.  Published via a
+      `plutext/claude-plugins` marketplace repo (or the official marketplace
+      if accepted).
+   4. **Official MCP Registry** entry: `server.json` (name
+      `io.github.plutext/docx4j-mcp`, GitHub-verified namespace; `org.docx4j`
+      via DNS later if wanted), packages = mcpb + oci, published with
+      `mcp-publisher` from the release workflow.  Aggregators (Glama,
+      PulseMCP, mcp.so, Smithery) mirror the registry and crawl GitHub —
+      claim those listings and tag the repo `mcp-server`.
+   5. **Claude connector directory** submission (Team/Enterprise org, review
+      against the annotation/safety requirements): worth attempting with the
+      mcpb, but it favours remote servers — expect this to land with phase 5.
+   6. **Docs**: README (done for the jar path; add mcpb/plugin/docker
+      install), a website page in the "Why docx4j" family that targets the
+      searches ("fill Word template MCP", "docx to PDF MCP"), client config
+      snippets for Claude Desktop, Claude Code, Cursor/others.
+   7. **Release mechanics**: version from the pom; CI builds jar + mcpb +
+      image on tag, computes the SHA-256, publishes the registry entry.
+      Gated on docx4j 17.0.4 and ImportXHTML 17.0.4 on Central (§2).
 4. **Extended tools** (M): tracked changes, anonymize, compare, the MergeDocx
    licence gate; resources/prompts if warranted.
 5. **Hosted/HTTP** (M-L, only on demonstrated demand): streamable HTTP
@@ -272,7 +312,7 @@ for this channel — flagging, not designing, here.
 | 0 Spike | S | De-risks everything else |
 | 1 Core tools | M | The product: describe+fill is the differentiator |
 | 2 Conversion/authoring | S-M | Broadens to the most-asked agent tasks |
-| 3 Packaging/distribution | S-M | Without this, nothing above exists publicly |
+| 3 Packaging/distribution | M | Without this, nothing above exists publicly; mcpb + plugin + registry are the actual discovery surfaces |
 | 4 Extended tools | M | Depth + the MergeDocx funnel |
 | 5 Hosted/HTTP | M-L | Only if adoption justifies the security surface |
 
