@@ -41,7 +41,8 @@ final class MarkdownToDocxTool {
 	static SyncToolSpecification spec(ServerConfig config) {
 		return ToolSupport.spec(config, NAME, "Convert Markdown to docx",
 				"Creates a properly styled Word document from Markdown: headings, lists and numbering, GFM tables, "
-						+ "code, footnotes, task lists and TeX math become native Word constructs (no HTML detour). "
+						+ "code, footnotes and task lists become native Word constructs (no HTML detour), and TeX math "
+						+ "($..$ / $$..$$) becomes real, editable Word equations (OMML) that also render in PDF/HTML export. "
 						+ "Give a styles_template_path to inherit an organisation's styles. Remote images are not fetched.",
 				SCHEMA, args -> run(config, args));
 	}

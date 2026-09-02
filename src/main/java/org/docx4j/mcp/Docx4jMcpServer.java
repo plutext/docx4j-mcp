@@ -66,7 +66,8 @@ public final class Docx4jMcpServer {
 				.instructions("docx4j tools for Word documents. Typical flows: describe_template then fill_template "
 						+ "to produce a document from a template; markdown_to_docx to author a new document; "
 						+ "docx_to_markdown to read one; html_to_docx / convert_to_html for HTML in and out; "
-						+ "convert_to_pdf to render. All file paths must be inside "
+						+ "convert_to_pdf to render. Mathematics is supported end to end: TeX math in Markdown and MathML "
+						+ "in HTML become editable Word equations, which render in PDF and HTML output. All file paths must be inside "
 						+ "the allowed roots: " + paths.roots() + ". Writing tools refuse to overwrite unless "
 						+ "overwrite: true. Inline text results are capped at " + args.maxInlineChars()
 						+ " chars; pass output_path for larger results.")

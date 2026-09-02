@@ -35,8 +35,8 @@ final class DocxToMarkdownTool {
 
 	static SyncToolSpecification spec(ServerConfig config) {
 		return ToolSupport.spec(config, NAME, "Convert docx to Markdown",
-				"Reads a Word document as Markdown (CommonMark + GFM): headings, lists, tables, footnotes, links "
-						+ "and math are preserved as Markdown structure. Prefer this over extract_text when structure "
+				"Reads a Word document as Markdown (CommonMark + GFM): headings, lists, tables, footnotes and links "
+						+ "are preserved as Markdown structure, and Word equations (OMML) become $..$ TeX math. Prefer this over extract_text when structure "
 						+ "matters. Large results are truncated inline unless output_path is given.",
 				SCHEMA, args -> run(config, args));
 	}

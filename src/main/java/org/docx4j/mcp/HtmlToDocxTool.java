@@ -51,7 +51,8 @@ final class HtmlToDocxTool {
 	static SyncToolSpecification spec(ServerConfig config) {
 		return ToolSupport.spec(config, NAME, "Convert HTML to docx",
 				"Creates a Word document from HTML using docx4j-ImportXHTML: headings, paragraphs, inline formatting, "
-						+ "lists, tables, links and CSS become native Word markup. Give a styles_template_path to inherit "
+						+ "lists, tables, links and CSS become native Word markup, and <math> (MathML) becomes real, editable "
+						+ "Word equations. Give a styles_template_path to inherit "
 						+ "an organisation's styles (class names matching style names map to those styles). "
 						+ "Remote images are not fetched; use data: URIs or local files under an allowed root.",
 				SCHEMA, args -> run(config, args));

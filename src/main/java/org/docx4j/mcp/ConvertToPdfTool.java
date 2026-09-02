@@ -38,8 +38,9 @@ final class ConvertToPdfTool {
 
 	static SyncToolSpecification spec(ServerConfig config) {
 		return ToolSupport.spec(config, NAME, "Convert docx to PDF",
-				"Renders a Word document to PDF with docx4j's XSL-FO exporter (Apache FOP). Reports which fonts "
-						+ "were substituted, so you can tell the user if the output may differ from Word.",
+				"Renders a Word document to PDF with docx4j's XSL-FO exporter (Apache FOP). Equations (OMML) are "
+						+ "rendered (a very long single display equation will not line-wrap). Reports which fonts were "
+						+ "substituted, so you can tell the user if the output may differ from Word.",
 				SCHEMA, args -> run(config, args));
 	}
 

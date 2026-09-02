@@ -503,3 +503,26 @@ ImportXHTML-core, openhtmltopdf, pdfbox, xerces, jsoup).
   worth stating on the website page.  Registry listing needs a released
   docx4j 17.0.4 and ImportXHTML 17.0.4 on Central.
 
+## 13. Math alignment (2026-09-02)
+
+docx4j 17.0.4 gained end-to-end mathematics (native OMML↔MathML converters,
+MathML in HTML export, jeuclid-rendered equations in PDF; docx4j-ImportXHTML
+aligned to 17.0.4 with native MathML→OMML import).  Surface decision: **no new
+tools** — the math flows through markdown_to_docx / docx_to_markdown (TeX ↔
+OMML), html_to_docx (MathML → OMML), convert_to_html (OMML → native MathML)
+and convert_to_pdf (rendered equations).  Adjustments made instead:
+
+- pom bumped to docx4j-ImportXHTML-core 17.0.4-SNAPSHOT (now version-aligned);
+  jeuclid-fop arrives transitively via docx4j-export-fo (~540 KB, Apache-2.0,
+  registered reflectively — verified working from the shaded jar).
+- Tool descriptions and server instructions now say equations are supported —
+  descriptions are the agent's only discovery surface, so without this an
+  agent with math to convert would not route it through these tools.
+- Tests: TeX → OMML → PDF, MathML-in-HTML → OMML (through the jsoup
+  normalisation, whose survival was the one integration risk: the importer
+  triggers on node name "math"), OMML → MathML in HTML export.
+- README documents the known limitation (a very long single display equation
+  is one atomic graphic in PDF; no line-wrap).
+- Awaiting the 17.0.4 releases (docx4j + ImportXHTML) on Central: switching
+  the pom to release versions, and all of phase 3's publishing (§8).
+

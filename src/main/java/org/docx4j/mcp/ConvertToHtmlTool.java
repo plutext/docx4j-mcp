@@ -37,7 +37,7 @@ final class ConvertToHtmlTool {
 	static SyncToolSpecification spec(ServerConfig config) {
 		return ToolSupport.spec(config, NAME, "Convert docx to HTML",
 				"Renders a Word document to a standalone HTML page (CSS from the document's styles, fonts "
-						+ "mapped to web font stacks). For a lossless-ish text view prefer docx_to_markdown; use this "
+						+ "mapped to web font stacks); Word equations become native, accessible MathML (no JavaScript). For a lossless-ish text view prefer docx_to_markdown; use this "
 						+ "when the layout/formatting matters or the HTML will be shown in a browser.",
 				SCHEMA, args -> run(config, args));
 	}

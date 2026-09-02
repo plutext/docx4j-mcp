@@ -71,6 +71,12 @@ otherwise write to `output_path` or truncate with a marker.
 | `convert_to_html` | docx → standalone HTML (visitor exporter; `image_dir_path` for images). |
 | `extract_text` | Plain text, one line per paragraph/table. |
 
+**Mathematics** is supported end to end (docx4j 17.0.4): TeX math in Markdown
+(`$..$`) and MathML in HTML become real, editable Word equations (OMML), and
+equations render in PDF (via jeuclid/FOP, no LaTeX toolchain) and HTML (native
+MathML, no JavaScript) output.  Known limitation: a very long single display
+equation is one atomic graphic in PDF and does not line-wrap.
+
 Writers take `output_path` and refuse to overwrite unless `overwrite: true`.
 
 ## Example (Claude Code)
