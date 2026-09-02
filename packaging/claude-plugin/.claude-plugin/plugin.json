@@ -1,0 +1,6 @@
+{
+  "name": "docx4j",
+  "description": "Word document tools: fill templates, Markdown/HTML to docx and back, PDF export with equations. Bundles the docx4j-mcp server config and a skill for the template workflow.",
+  "version": "0.1.0",
+  "author": { "name": "Plutext", "url": "https://www.docx4java.org/" }
+}

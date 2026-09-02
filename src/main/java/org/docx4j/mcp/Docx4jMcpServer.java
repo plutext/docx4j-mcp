@@ -41,7 +41,7 @@ public final class Docx4jMcpServer {
 			paths = new PathPolicy(args.roots());
 		} catch (IllegalArgumentException e) {
 			System.err.println("docx4j-mcp: " + e.getMessage());
-			System.err.println("usage: java -jar docx4j-mcp.jar --root DIR [--root DIR ...] [--max-inline-chars N]");
+			System.err.println("usage: java -jar docx4j-mcp.jar --root DIR [--root DIR ...] [DIR ...] [--max-inline-chars N]");
 			System.exit(2);
 			return;
 		}

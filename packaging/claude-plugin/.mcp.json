@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "docx4j": {
+      "command": "java",
+      "args": ["-jar", "${DOCX4J_MCP_JAR}", "${DOCX4J_MCP_ROOTS:-.}"],
+      "env": {}
+    }
+  }
+}

@@ -4,16 +4,13 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) server that exposes
 [docx4j](https://www.docx4java.org/)'s engine to AI agents: read, convert and fill
 Word (.docx) documents from Claude Desktop, Claude Code, or any MCP client.
 
-**Status: phase 2** — core, Markdown and HTML tools work over stdio (see below).  The plan,
-tool surface and phasing are in [CR-mcp-server.md](CR-mcp-server.md).
+**Status: phase 3** — all tools work over stdio against released docx4j 17.0.4;
+packaged as a runnable jar, an `.mcpb` bundle, an OCI image and a Claude Code
+plugin.  The plan, tool surface and phasing are in [CR-mcp-server.md](CR-mcp-server.md).
 
 ## Build
 
-Requires JDK 17+ and, until docx4j 17.0.4 is released, locally installed
-snapshots: docx4j `17.0.4-SNAPSHOT` (`mvn install -DskipTests` in the docx4j
-reactor) and docx4j-ImportXHTML-core `17.0.3-SNAPSHOT` (`mvn install -DskipTests
--Dgpg.skip=true -Dversion.docx4j=17.0.4-SNAPSHOT -pl docx4j-ImportXHTML-core -am`
-in the ImportXHTML repo).
+Requires JDK 17+.  All docx4j dependencies (17.0.4) come from Maven Central.
 
 ```bash
 mvn package            # -> target/docx4j-mcp.jar (shaded, runnable)
@@ -25,6 +22,36 @@ mvn test               # JUnit 5 tests against the tool handlers directly
 ```bash
 java -jar target/docx4j-mcp.jar --root /path/to/documents [--root ...] [--max-inline-chars N]
 ```
+
+Bare directory arguments are also accepted as roots (this is what the `.mcpb`
+bundle's folder picker passes).
+
+### Claude Desktop, one click
+
+Install `docx4j-mcp.mcpb` from the GitHub release (Settings → Extensions), pick
+the folders the server may touch, done.  Built locally with
+`packaging/build-mcpb.sh`.  Requires Java 17+ on your PATH.
+
+### Docker
+
+```bash
+docker run -i --rm -v /path/to/documents:/data ghcr.io/plutext/docx4j-mcp
+```
+
+(paths in tool calls are then container paths under `/data`;
+`packaging/docker/Dockerfile` to build locally).
+
+### Claude Code plugin
+
+`packaging/claude-plugin/` bundles the server config and a skill for the
+template/authoring workflows.  Set `DOCX4J_MCP_JAR` (path to the jar) and
+optionally `DOCX4J_MCP_ROOTS`.
+
+## Releasing
+
+Tag `vX.Y.Z`: `.github/workflows/release.yml` builds jar + mcpb, attaches them
+to the GitHub release, pushes `ghcr.io/plutext/docx4j-mcp`, and publishes
+`server.json` (sha filled in) to the official MCP registry via GitHub OIDC.
 
 Every file path an agent passes must resolve inside one of the `--root`
 directories (symlinks are resolved first).  There is no default root; the server

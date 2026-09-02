@@ -1,0 +1,31 @@
+{
+  "manifest_version": "0.3",
+  "name": "docx4j-mcp",
+  "display_name": "docx4j Word documents",
+  "version": "0.1.0",
+  "description": "Read, convert and fill Word (.docx) documents: template filling (OpenDoPE, mail merge), Markdown/HTML in and out, PDF export with equations. Requires Java 17+ on your PATH.",
+  "author": { "name": "Plutext", "url": "https://www.docx4java.org/" },
+  "repository": { "type": "git", "url": "https://github.com/plutext/docx4j-mcp" },
+  "license": "Apache-2.0",
+  "server": {
+    "type": "binary",
+    "entry_point": "docx4j-mcp.jar",
+    "mcp_config": {
+      "command": "java",
+      "args": ["-jar", "${__dirname}/docx4j-mcp.jar", "${user_config.roots}"]
+    }
+  },
+  "user_config": {
+    "roots": {
+      "type": "directory",
+      "title": "Allowed document folders",
+      "description": "The server can only read and write files inside these folders.",
+      "multiple": true,
+      "required": true,
+      "default": ["${DOCUMENTS}"]
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"]
+  }
+}

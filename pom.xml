@@ -24,9 +24,9 @@
 		<!-- Java 17 floor for THIS artifact only (MCP SDK requirement); docx4j itself stays at 11 -->
 		<maven.compiler.release>17</maven.compiler.release>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<docx4j.version>17.0.4-SNAPSHOT</docx4j.version>
-		<!-- aligned to docx4j since 17.0.4; switch both to release versions when 17.0.4 is on Central (CR §2) -->
-		<docx4j.importxhtml.version>17.0.4-SNAPSHOT</docx4j.importxhtml.version>
+		<docx4j.version>17.0.4</docx4j.version>
+		<!-- aligned to docx4j since 17.0.4 -->
+		<docx4j.importxhtml.version>17.0.4</docx4j.importxhtml.version>
 		<jsoup.version>1.18.3</jsoup.version>
 		<mcp.version>2.0.1</mcp.version>
 		<logback.version>1.5.18</logback.version>

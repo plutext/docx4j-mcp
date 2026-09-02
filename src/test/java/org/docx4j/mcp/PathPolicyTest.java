@@ -18,6 +18,14 @@ class PathPolicyTest {
 	}
 
 	@Test
+	void positionalArgsAreRoots(@TempDir Path a, @TempDir Path b) {
+		ServerConfig.Args parsed = ServerConfig.Args.parse(new String[] {"--root", a.toString(), b.toString()});
+		assertEquals(List.of(a, b), parsed.roots());
+		assertThrows(IllegalArgumentException.class,
+				() -> ServerConfig.Args.parse(new String[] {a.toString(), "--bogus"}));
+	}
+
+	@Test
 	void dotDotCannotEscapeRoot(@TempDir Path root) {
 		PathPolicy p = new PathPolicy(List.of(root));
 		assertThrows(ToolArgumentException.class, () -> p.resolve("x", root.resolve("../escape.docx").toString()));

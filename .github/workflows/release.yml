@@ -1,0 +1,60 @@
+# Release on tag vX.Y.Z: shaded jar -> .mcpb -> GitHub Release; OCI image -> ghcr;
+# server.json (sha filled in) -> the official MCP registry.
+# Secrets/permissions needed: contents:write, packages:write; registry publish
+# authenticates via GitHub OIDC (mcp-publisher login github-oidc).
+name: release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+  packages: write
+  id-token: write   # mcp-publisher github-oidc
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+      - name: Version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          mvn -q versions:set -DnewVersion="$VERSION" -DgenerateBackupPoms=false
+      - name: Build and test
+        run: mvn -q package
+      - name: Build mcpb
+        run: |
+          sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" packaging/mcpb/manifest.json
+          packaging/build-mcpb.sh
+          echo "SHA256=$(sha256sum target/docx4j-mcp.mcpb | cut -d' ' -f1)" >> "$GITHUB_ENV"
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            target/docx4j-mcp.mcpb
+            target/docx4j-mcp.jar
+      - name: OCI image
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker build -f packaging/docker/Dockerfile -t "ghcr.io/plutext/docx4j-mcp:$VERSION" -t ghcr.io/plutext/docx4j-mcp:latest .
+          docker push "ghcr.io/plutext/docx4j-mcp:$VERSION"
+          docker push ghcr.io/plutext/docx4j-mcp:latest
+      - name: Publish to MCP registry
+        run: |
+          python3 - <<PY
+          import json
+          s = json.load(open("server.json"))
+          s["version"] = "$VERSION"
+          for p in s["packages"]:
+              if p["registryType"] == "mcpb":
+                  p["identifier"] = f"https://github.com/plutext/docx4j-mcp/releases/download/v$VERSION/docx4j-mcp.mcpb"
+                  p["fileSha256"] = "$SHA256"
+              if p["registryType"] == "oci":
+                  p["identifier"] = f"ghcr.io/plutext/docx4j-mcp:$VERSION"
+          json.dump(s, open("server.json", "w"), indent=2)
+          PY
+          curl -sL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish

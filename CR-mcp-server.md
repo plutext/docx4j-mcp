@@ -1,6 +1,6 @@
 # CR: docx4j MCP server (expose the engine to AI agents via Model Context Protocol)
 
-Status: PHASE 2 DONE (proposed, reviewed, spiked, phases 1-2 built 2026-09-01); phase 3 (packaging/distribution) next
+Status: PHASE 3 BUILT (2026-09-03, on released 17.0.4 artifacts); first tagged release + registry publish pending (jharrop)
 Scope: a NEW satellite artifact (`docx4j-mcp`) — no changes to
 docx4j-core beyond what the tools need; lives in its own repo, `plutext/docx4j-mcp`
 (decided 2026-09-01, §7).  Phase 0 findings are in §10.
@@ -525,4 +525,43 @@ and convert_to_pdf (rendered equations).  Adjustments made instead:
   is one atomic graphic in PDF; no line-wrap).
 - Awaiting the 17.0.4 releases (docx4j + ImportXHTML) on Central: switching
   the pom to release versions, and all of phase 3's publishing (§8).
+
+## 14. Phase 3 progress (2026-09-03)
+
+docx4j 17.0.4 and docx4j-ImportXHTML 17.0.4 released to Central; the pom now
+consumes releases only (no local snapshots), full suite green (32 tests).
+
+Built and verified locally:
+
+- **`.mcpb` bundle** (`packaging/mcpb/manifest.json` + `packaging/build-mcpb.sh`
+  → `target/docx4j-mcp.mcpb`, ~48 MB): `binary` server type, `command: java`
+  (Java 17+ on PATH is a stated requirement), roots as a `directory`
+  `user_config` with `multiple: true`.  That expands as bare positional
+  arguments, so the server CLI now accepts non-flag arguments as roots
+  (tested).  Manifest spec 0.3.
+- **OCI image** (`packaging/docker/Dockerfile`, repo-root context +
+  `.dockerignore`): eclipse-temurin:17-jre + **fontconfig + dejavu** — a bare
+  JRE image has no AWT font machinery and FOP/jeuclid need it.  Verified in
+  the container over stdio: markdown-with-math → docx → PDF, no errors.
+- **Claude Code plugin** (`packaging/claude-plugin/`): plugin.json, `.mcp.json`
+  (jar path via `DOCX4J_MCP_JAR`, roots via `DOCX4J_MCP_ROOTS`), and a
+  `docx-documents` skill carrying the describe→fill workflow, authoring
+  guidance and ground rules — the agent-side discovery surface.
+- **`server.json`** (repo root, schema 2025-12-11): `io.github.plutext/docx4j-mcp`,
+  mcpb package (release-asset URL + sha256, filled by CI) and oci package
+  (ghcr.io, volume-mount runtime argument).
+- **Release workflow** (`.github/workflows/release.yml`): on tag vX.Y.Z —
+  version from tag, build+test, mcpb + sha, GitHub Release assets, ghcr push,
+  `mcp-publisher login github-oidc` + publish.
+
+Remaining for the ship-it milestone (jharrop actions mostly):
+
+- Push the repo + tag v0.1.0; verify the workflow end to end (ghcr and
+  registry OIDC both need the repo public / permissions as declared).
+- Registry namespace `io.github.plutext` is claimed by logging in with the
+  plutext GitHub account (or switch to `org.docx4j` via DNS TXT).
+- Aggregators: claim listings (Glama, PulseMCP, mcp.so), tag repo `mcp-server`.
+- Website page ("Why docx4j" family; lead with LLM math → docx/HTML/PDF and
+  describe→fill).  Connector-directory submission deferred to phase 5 (§8).
+- Marketplace repo for the plugin (plutext/claude-plugins) if wanted.
 

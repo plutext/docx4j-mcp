@@ -28,7 +28,14 @@ public record ServerConfig(PathPolicy paths, int maxInlineChars, McpJsonMapper m
 						}
 						if (max < 1000) throw new IllegalArgumentException("--max-inline-chars must be at least 1000");
 					}
-					default -> throw new IllegalArgumentException("unknown argument: " + argv[i]);
+					default -> {
+						// MCPB multiple-directory user_config expands as bare positional args:
+						// accept any non-flag argument as a root directory
+						if (argv[i].startsWith("-")) {
+							throw new IllegalArgumentException("unknown argument: " + argv[i]);
+						}
+						roots.add(Path.of(argv[i]));
+					}
 				}
 			}
 			return new Args(roots, max);
