@@ -29,9 +29,12 @@ jobs:
           sed -i "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" packaging/mcpb/manifest.json
           packaging/build-mcpb.sh
           echo "SHA256=$(sha256sum target/docx4j-mcp.mcpb | cut -d' ' -f1)" >> "$GITHUB_ENV"
+      - name: Engine version
+        run: echo "DOCX4J_VERSION=$(mvn -q help:evaluate -Dexpression=docx4j.version -DforceStdout)" >> "$GITHUB_ENV"
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          name: "v${{ env.VERSION }} (docx4j ${{ env.DOCX4J_VERSION }})"
           files: |
             target/docx4j-mcp.mcpb
             target/docx4j-mcp.jar

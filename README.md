@@ -4,6 +4,9 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) server that exposes
 [docx4j](https://www.docx4java.org/)'s engine to AI agents: read, convert and fill
 Word (.docx) documents from Claude Desktop, Claude Code, or any MCP client.
 
+**Engine: docx4j 17.0.4** (the server versions independently; the bundled docx4j
+version is in the pom, the server's startup log, and its MCP instructions).
+
 **Status: phase 3** — all tools work over stdio against released docx4j 17.0.4;
 packaged as a runnable jar, an `.mcpb` bundle, an OCI image and a Claude Code
 plugin.  The plan, tool surface and phasing are in [CR-mcp-server.md](CR-mcp-server.md).

@@ -63,7 +63,8 @@ public final class Docx4jMcpServer {
 
 		McpSyncServer server = McpServer.sync(transport)
 				.serverInfo(NAME, VERSION)
-				.instructions("docx4j tools for Word documents. Typical flows: describe_template then fill_template "
+				.instructions("docx4j " + org.docx4j.Version.getDocx4jVersion()
+						+ " tools for Word documents. Typical flows: describe_template then fill_template "
 						+ "to produce a document from a template; markdown_to_docx to author a new document; "
 						+ "docx_to_markdown to read one; html_to_docx / convert_to_html for HTML in and out; "
 						+ "convert_to_pdf to render. Mathematics is supported end to end: TeX math in Markdown and MathML "
@@ -83,7 +84,8 @@ public final class Docx4jMcpServer {
 						ExtractTextTool.spec(config))
 				.build();
 
-		log.info("{} {} up; roots={} maxInlineChars={}", NAME, VERSION, paths.roots(), args.maxInlineChars());
+		log.info("{} {} (docx4j {}) up; roots={} maxInlineChars={}", NAME, VERSION,
+				org.docx4j.Version.getDocx4jVersion(), paths.roots(), args.maxInlineChars());
 
 		// The transport's stdin reader runs on its own (daemon) thread; keep main alive until the client goes away.
 		stdinClosed.await();
