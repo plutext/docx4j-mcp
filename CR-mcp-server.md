@@ -1,6 +1,6 @@
 # CR: docx4j MCP server (expose the engine to AI agents via Model Context Protocol)
 
-Status: PHASE 3 BUILT (2026-09-03, on released 17.0.4 artifacts); first tagged release + registry publish pending (jharrop)
+Status: SHIPPED — v0.1.0 (docx4j 17.0.4) released and live in the official MCP registry (2026-09-03); phase 4 gated on adoption signals (§7)
 Scope: a NEW satellite artifact (`docx4j-mcp`) — no changes to
 docx4j-core beyond what the tools need; lives in its own repo, `plutext/docx4j-mcp`
 (decided 2026-09-01, §7).  Phase 0 findings are in §10.
@@ -564,4 +564,13 @@ Remaining for the ship-it milestone (jharrop actions mostly):
 - Website page ("Why docx4j" family; lead with LLM math → docx/HTML/PDF and
   describe→fill).  Connector-directory submission deferred to phase 5 (§8).
 - Marketplace repo for the plugin (plutext/claude-plugins) if wanted.
+
+v0.1.0 shipped 2026-09-03: GitHub Release (jar + mcpb), ghcr.io/plutext/docx4j-mcp,
+and `io.github.plutext/docx4j-mcp` active in the official MCP registry (published
+by the tag workflow via GitHub OIDC).  Two registry validations bit on the way,
+recorded for future releases: (1) `description` is capped at 100 chars; (2) an
+OCI package is only accepted if the image carries
+`LABEL io.modelcontextprotocol.server.name="io.github.plutext/docx4j-mcp"`
+(ownership proof; must match the server name exactly).  Remaining distribution
+actions from §14: aggregator listings, `mcp-server` repo topic, website page.
 
