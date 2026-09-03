@@ -2,24 +2,43 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.plutext/docx4j-mcp",
   "title": "docx4j Word documents",
-  "description": "Read, convert and fill Word (.docx) documents: template filling (OpenDoPE, mail merge), Markdown/HTML in and out, PDF export with equations rendered.",
+  "description": "Read, convert and fill Word (.docx) documents: templates, Markdown/HTML in and out, PDF with math.",
   "version": "0.1.0",
-  "repository": { "url": "https://github.com/plutext/docx4j-mcp", "source": "github" },
+  "repository": {
+    "url": "https://github.com/plutext/docx4j-mcp",
+    "source": "github"
+  },
   "websiteUrl": "https://www.docx4java.org/",
   "packages": [
     {
       "registryType": "mcpb",
       "identifier": "https://github.com/plutext/docx4j-mcp/releases/download/v0.1.0/docx4j-mcp.mcpb",
       "fileSha256": "0000000000000000000000000000000000000000000000000000000000000000",
-      "transport": { "type": "stdio" }
+      "transport": {
+        "type": "stdio"
+      }
     },
     {
       "registryType": "oci",
       "identifier": "ghcr.io/plutext/docx4j-mcp:0.1.0",
-      "transport": { "type": "stdio" },
+      "transport": {
+        "type": "stdio"
+      },
       "runtimeArguments": [
-        { "type": "named", "name": "-v", "value": "{documents_dir}:/data", "isRequired": true, "isRepeated": false,
-          "variables": { "documents_dir": { "description": "Host folder the server may read/write", "isRequired": true, "format": "filepath" } } }
+        {
+          "type": "named",
+          "name": "-v",
+          "value": "{documents_dir}:/data",
+          "isRequired": true,
+          "isRepeated": false,
+          "variables": {
+            "documents_dir": {
+              "description": "Host folder the server may read/write",
+              "isRequired": true,
+              "format": "filepath"
+            }
+          }
+        }
       ]
     }
   ]
