@@ -4,7 +4,7 @@ A [Model Context Protocol](https://modelcontextprotocol.io/) server that exposes
 [docx4j](https://www.docx4java.org/)'s engine to AI agents: read, convert and fill
 Word (.docx) documents from Claude Desktop, Claude Code, or any MCP client.
 
-**Engine: docx4j 17.0.4** (the server versions independently; the bundled docx4j
+**Engine: docx4j 17.1.0** (the server versions independently; the bundled docx4j
 version is in the pom, the server's startup log, and its MCP instructions).
 
 **Status: phase 3** — all tools work over stdio against released docx4j 17.0.4;
@@ -13,7 +13,7 @@ plugin.  The plan, tool surface and phasing are in [CR-mcp-server.md](CR-mcp-ser
 
 ## Build
 
-Requires JDK 17+.  All docx4j dependencies (17.0.4) come from Maven Central.
+Requires JDK 17+.  All docx4j dependencies (docx4j 17.1.0, ImportXHTML 17.0.4) come from Maven Central.
 
 ```bash
 mvn package            # -> target/docx4j-mcp.jar (shaded, runnable)
@@ -94,14 +94,14 @@ otherwise write to `output_path` or truncate with a marker.
 |---|---|
 | `describe_template` | What data a template wants: skeleton XML + xpaths/conditions (OpenDoPE, bound content controls) or MERGEFIELD names and format switches (mail merge). Call before `fill_template`. |
 | `fill_template` | Fill a template, preserving its formatting. `data` is an XML string (OpenDoPE / bound controls; repeats and conditions processed) or a JSON object (mail merge). |
-| `convert_to_pdf` | docx → PDF via XSL-FO / Apache FOP; reports font substitutions. Bundles metric-compatible fonts (Carlito, Caladea, Liberation, Tinos…). |
+| `convert_to_pdf` | docx → PDF via XSL-FO / Apache FOP; equations and WMF/EMF drawings rendered as vectors; optional `update_toc`; reports font substitutions. Bundles metric-compatible fonts (Carlito, Caladea, Liberation, Tinos…). |
 | `markdown_to_docx` | Markdown → properly styled docx (headings, numbering, GFM tables, footnotes, task lists, TeX math). Optional `styles_template_path`. |
 | `docx_to_markdown` | docx → Markdown (structure preserved). Options: `tracked_changes` accept/markup, `image_dir_path`. |
 | `html_to_docx` | HTML → docx via docx4j-ImportXHTML. Loose HTML accepted (normalised with jsoup); `h1`–`h6` map to heading styles; optional `styles_template_path`; `mode: altchunk` embeds the HTML for Word to convert on open. Remote images/stylesheets are never fetched. |
-| `convert_to_html` | docx → standalone HTML (visitor exporter; `image_dir_path` for images). |
+| `convert_to_html` | docx → standalone HTML (visitor exporter; `image_dir_path` for images; optional `update_toc`). |
 | `extract_text` | Plain text, one line per paragraph/table. |
 
-**Mathematics** is supported end to end (docx4j 17.0.4): TeX math in Markdown
+**Mathematics** is supported end to end: TeX math in Markdown
 (`$..$`) and MathML in HTML become real, editable Word equations (OMML), and
 equations render in PDF (via jeuclid/FOP, no LaTeX toolchain) and HTML (native
 MathML, no JavaScript) output.  Known limitation: a very long single display

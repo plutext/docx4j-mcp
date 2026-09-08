@@ -26,6 +26,7 @@ final class ConvertToHtmlTool {
 			    "output_path": {"type": "string", "description": "Optional: write the HTML to this file (required if the result exceeds the inline limit)"},
 			    "image_dir_path": {"type": "string", "description": "Optional directory to write images into (referenced relatively from the HTML when output_path is given); images are omitted otherwise"},
 			    "use_xslt": {"type": "boolean", "description": "Use the older XSLT-based exporter instead of the default visitor exporter (default false)"},
+			    "update_toc": {"type": "boolean", "description": "Regenerate the document's table of contents entries before rendering (no page numbers in HTML; default false)"},
 			    "overwrite": {"type": "boolean", "description": "Replace output_path if it exists (default false)"}
 			  },
 			  "required": ["input_path"]
@@ -60,6 +61,10 @@ final class ConvertToHtmlTool {
 			meta.put("image_dir_path", dir.toString());
 		}
 		int flags = args.bool("use_xslt", false) ? Docx4J.FLAG_EXPORT_PREFER_XSL : Docx4J.FLAG_EXPORT_PREFER_NONXSL;
+		if (args.bool("update_toc", false)) {
+			flags |= Docx4J.FLAG_EXPORT_UPDATE_TOC;
+			meta.put("update_toc", true);
+		}
 
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		Docx4J.toHTML(settings, bos, flags);

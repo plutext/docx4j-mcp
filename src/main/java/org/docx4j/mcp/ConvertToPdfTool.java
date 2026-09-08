@@ -28,7 +28,8 @@ final class ConvertToPdfTool {
 			    "input_path": {"type": "string", "description": "Path to the .docx"},
 			    "output_path": {"type": "string", "description": "Where to write the PDF"},
 			    "overwrite": {"type": "boolean", "description": "Replace output_path if it exists (default false)"},
-			    "use_xslt": {"type": "boolean", "description": "Use the older XSLT-based exporter instead of the default visitor exporter (default false)"}
+			    "use_xslt": {"type": "boolean", "description": "Use the older XSLT-based exporter instead of the default visitor exporter (default false)"},
+			    "update_toc": {"type": "boolean", "description": "Regenerate the document's table of contents (entries and page numbers) before rendering, so it matches the output (default false; no effect if the document has no ToC)"}
 			  },
 			  "required": ["input_path", "output_path"]
 			}
@@ -61,13 +62,17 @@ final class ConvertToPdfTool {
 			}
 		}
 
+		Map<String, Object> meta = new LinkedHashMap<>();
 		int flags = args.bool("use_xslt", false) ? Docx4J.FLAG_EXPORT_PREFER_XSL : Docx4J.FLAG_EXPORT_PREFER_NONXSL;
+		if (args.bool("update_toc", false)) {
+			flags |= Docx4J.FLAG_EXPORT_UPDATE_TOC;
+			meta.put("update_toc", true);
+		}
 		try (OutputStream os = Files.newOutputStream(out)) {
 			Docx4J.toPDF(pkg, os, flags);
 		}
 
 		long bytes = ToolSupport.sizeOf(out);
-		Map<String, Object> meta = new LinkedHashMap<>();
 		meta.put("input_path", in.toString());
 		meta.put("output_path", out.toString());
 		meta.put("bytes", bytes);

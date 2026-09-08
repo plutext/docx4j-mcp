@@ -39,6 +39,20 @@ class ConversionToolsTest {
 	}
 
 	@Test
+	void updateTocBeforePdf(@TempDir Path tmp) throws Exception {
+		// sample.docx contains a ToC with stale PAGEREF results
+		Path out = tmp.resolve("toc.pdf");
+		CallToolResult r = ConvertToPdfTool.run(config(tmp), args(
+				"input_path", fixture("sample.docx"), "output_path", out.toString(), "update_toc", true));
+		assertEquals(Boolean.FALSE, r.isError(), text(r));
+		assertEquals(Boolean.TRUE, r.meta().get("update_toc"));
+		assertTrue(Files.size(out) > 3000);
+		CallToolResult h = ConvertToHtmlTool.run(config(tmp), args(
+				"input_path", fixture("sample.docx"), "update_toc", true));
+		assertEquals(Boolean.FALSE, h.isError(), text(h));
+	}
+
+	@Test
 	void markdownRoundTrip(@TempDir Path tmp) throws Exception {
 		String md = """
 				# Report Title

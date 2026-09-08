@@ -574,3 +574,18 @@ OCI package is only accepted if the image carries
 (ownership proof; must match the server name exactly).  Remaining distribution
 actions from §14: aggregator listings, `mcp-server` repo topic, website page.
 
+## 15. docx4j 17.1.0 (2026-09-08)
+
+Engine bumped to 17.1.0 (Central); ImportXHTML stays at its latest release
+17.0.4 and is binary-compatible (full suite green).  What flows through for
+free: substantially better PDF layout (tabs, text boxes — see export-fo's
+word-layout-rules.md), and WMF/EMF/EMF+ pictures now drawn as vectors in PDF
+and HTML (previously dropped or rasterised; equation-editor and chart previews
+stay searchable text).  Surface change: **`update_toc` option** on
+convert_to_pdf and convert_to_html (Docx4J.FLAG_EXPORT_UPDATE_TOC — an OR-able
+bit the facade clears before the exporter switch), so an agent can regenerate
+a stale table of contents to match the rendered output.  A standalone
+update_toc tool (update in place, save docx) is phase 4 material if asked for.
+Shaded jar 49.4 MB (+1 MB, batik-svggen/gvt).  Release as v0.2.0 (engine
+upgrade + surface growth = minor bump, per the versioning convention).
+
