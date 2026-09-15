@@ -141,6 +141,7 @@ mode rather than duplicating it.
 | `anonymize` | `input_path`, `output_path` | docx with text scrambled, metadata stripped | docx4j-docx-anon |
 | `compare` | `path_a`, `path_b` | a summary of differences (and optionally a marked-up docx) | docx4j-diffx |
 | `merge_documents` | `input_paths[]`, `output_path` | docx | **MergeDocx (commercial)**: present in the tool list; without a licence key the tool returns a clear message + link (never a silent degraded merge). With `MERGEDOCX_LICENSE`/jar present, runs it. §5 |
+| `paginate` | `input_path`, `output_path`, `line_breaks` | the pagination map as JSON, and the docx with `w:lastRenderedPageBreak` markers rewritten | docx4j `Paginate` (docx4j CR-012 phase 4; requested by the docx4j-ts-editor design, ED-001 appendix D; added 2026-09-15) |
 
 ### Resources and prompts (optional, phase 4+)
 
