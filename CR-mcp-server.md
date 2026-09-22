@@ -260,8 +260,8 @@ for this channel — flagging, not designing, here.
   files other generators (python-docx et al) produce — machinery exists in
   docx4j; in no CR yet.  If either proposal grows into in-place editing,
   adopt the three content-address forms of
-  ../docx4j-portfolio/docs/mcp_tool_vocabulary.md §7 (body/3, w14:paraId,
-  {contains}); the eight shipped tool names stay frozen regardless.  The
+  ../docx4j-portfolio/docs/mcp_tool_vocabulary.md §3 (body/3, w14:paraId,
+  {contains}; per-repo changes are its §8); the eight shipped tool names stay frozen regardless.  The
   standalone update_toc tool floated in §15 stays speculative CR prose
   (deliberately untracked in the portfolio registry): the converter option
   covers the agent workflow, and a thin Docx4J.updateToc wrapper can be added
@@ -626,14 +626,24 @@ Status: PROPOSED 2026-09-23, from ../docx4j-portfolio/docs/mcp_strategy.md
 
 ### 16.1 Why
 
-Every other docx MCP server — and the bundled skills — silently rewrites the
-file.  That is precisely why people do not let agents near documents that
-matter.  docx4j models revision markup (w:ins / w:del, property changes)
-fully; nothing else in this space does.  Returning an agent's edits as
-tracked changes attributed to the agent turns "the agent changed my contract"
-into "the agent proposed changes; I accepted three of them in Word".  The
-primitive is shared with docx4j-ts-editor ED-001 phase E4 (the same idea with
-a human watching live).
+Returning an agent's edits as tracked changes attributed to the agent turns
+"the agent changed my contract" into "the agent proposed changes; I accepted
+three of them in Word".  The primitive is shared with docx4j-ts-editor
+ED-001 phase E4 (the same idea with a human watching live).
+
+CORRECTED PITCH (2026-09-23, portfolio competitor survey — source-level
+reading, not behavioural tests): this is NOT unique.  At least eight Word MCP
+servers emit genuine w:ins/w:del (survey in mcp_strategy.md §1.1 as amended;
+UseJunior/safe-docx, Apache-2.0 and in the official registry, is the
+strongest: write-time emission, per-author accept/reject with a mixed-author
+invariant corpus, typed write tools, an ECMA-376 conformance gate, and
+honestly published limits).  Tracked changes are therefore TABLE STAKES — a
+docx server without them is the one that gets replaced — and the pitch is
+not "nobody else does this" but "tracked changes that survive the long tail
+(the documents docx4j's fidelity work exists for), combined with validation,
+comparison and repair".  Nobody has yet demonstrated their markup survives
+difficult documents; that measurement gap is the actual opportunity, and
+16.3/16.5 are written to target it rather than assert past it.
 
 ### 16.2 Contract
 
@@ -664,21 +674,26 @@ a human watching live).
 
 ### 16.3 Mechanism
 
-Phase TC-1 is DIFF-BASED, because the primitive already exists:
+Write-time emission is the RIGHT mechanism — the survey confirms the
+strongest competitor emits revisions as it writes, and diff-derived markup
+is structurally the weaker artefact (a reconstruction, not a record).  For
+this server's first mutating tool, though, fill_template's edits happen
+inside docx4j-core's binding pathway, so write-time emission there is engine
+work this repo depends on but does not do.  Phase TC-1 is therefore
+DIFF-BASED as the pragmatic interim, because that primitive already exists:
 `org.docx4j.diff.Differencer.diff(newer, older, result, author, date, ...)`
 (docx4j-diffx) emits w:ins/w:del with the attribution we need.  The tool
 clones the package (deepCopyFast) before operating, runs the ordinary
 operation, diffs old→new at Body level, and saves the redline as the output.
 Costs to measure and record here: diff fidelity (granularity of replacements,
 tables, numbering), performance on large documents, and whether headers/
-footers need separate passes.  Where diff granularity disappoints for a
-specific tool (likely fill_template: a whole repeated table row should be one
-insertion, not many), phase TC-3 moves that tool to DIRECT EMISSION —
-wrapping its own edits in w:ins/w:del at the point it makes them — which for
-fill_template means binding-pathway work in docx4j-core, i.e. a docx4j-side
-CR this repo would depend on (that engine work belongs to the docx4j
-session/repo, recorded as a dependency in the portfolio registry, not done
-here).
+footers need separate passes.  TC-1's fidelity findings decide how fast TC-3 (write-time emission in the
+docx4j-core binding pathway — a docx4j-side CR this repo depends on,
+recorded in the portfolio registry, not done here) is pulled forward; given
+the competitive position, treat TC-3 as the destination and TC-1 as the
+bridge, not the other way round.  Any tool whose edits this server makes
+DIRECTLY (the future in-place editing tools) emits at write time from day
+one and never goes through the diff pathway.
 
 An invariant gives the whole feature a cheap correctness test: fill with
 `track_changes: true`, accept all revisions (the consuming tool), and the
@@ -714,7 +729,16 @@ result must equal the plain `track_changes: false` fill.
   TC-1 should coalesce adjacent runs where diffx allows it, and report the
   count so the agent can warn.
 - **`author` collisions**: a template may already contain revisions by other
-  authors; the tools must leave those untouched (accept/reject default `all`
-  therefore needs an `author` filter before TC-1 ships alongside them —
-  noted for the accept/reject implementation).
+  authors; the tools must leave those untouched.  Accept/reject therefore
+  need an `author` filter before shipping alongside the producing half, and
+  the test bar is a MIXED-AUTHOR INVARIANT CORPUS: foreign authors'
+  revisions byte-identical after our operations (safe-docx has published
+  exactly this test shape; match it, then exceed it with the difficult
+  documents docx4j's fidelity corpus already holds).
+- **Publish limits honestly.**  Revision markup has a long tail (w:cellIns /
+  w:cellDel / w:cellMerge / tblGridChange, move ranges, property changes);
+  whatever accept/reject does not resolve gets documented as a stated limit
+  in tool descriptions and README, never discovered by the user.  The
+  competitor that publishes its limits is more credible than the one that
+  claims completeness; be the first kind.
 
