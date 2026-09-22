@@ -255,8 +255,8 @@ for this channel — flagging, not designing, here.
   OUTPUT channel — every mutating tool gains a `track_changes` mode returning
   its edits as w:ins/w:del attributed to the agent, so a human reviews in
   Word instead of receiving a silently rewritten file; the current phase 4
-  rows cover only the consuming half (accept/reject), and this needs its own
-  CR section if adopted.  (b) a validate/repair tool over the malformed docx
+  rows cover only the consuming half (accept/reject); drafted as §16, awaiting
+  the decision.  (b) a validate/repair tool over the malformed docx
   files other generators (python-docx et al) produce — machinery exists in
   docx4j; in no CR yet.  If either proposal grows into in-place editing,
   adopt the three content-address forms of
@@ -617,4 +617,104 @@ a stale table of contents to match the rendered output.  A standalone
 update_toc tool (update in place, save docx) is phase 4 material if asked for.
 Shaded jar 49.4 MB (+1 MB, batik-svggen/gvt).  Release as v0.2.0 (engine
 upgrade + surface growth = minor bump, per the versioning convention).
+
+## 16. Tracked changes as the agent's output channel (PROPOSED)
+
+Status: PROPOSED 2026-09-23, from ../docx4j-portfolio/docs/mcp_strategy.md
+§1.1; DECISION NEEDED (jharrop).  Portfolio registry: mcp/tracked-changes-tools
+(un-gated).  Names follow ../docx4j-portfolio/docs/mcp_tool_vocabulary.md.
+
+### 16.1 Why
+
+Every other docx MCP server — and the bundled skills — silently rewrites the
+file.  That is precisely why people do not let agents near documents that
+matter.  docx4j models revision markup (w:ins / w:del, property changes)
+fully; nothing else in this space does.  Returning an agent's edits as
+tracked changes attributed to the agent turns "the agent changed my contract"
+into "the agent proposed changes; I accepted three of them in Word".  The
+primitive is shared with docx4j-ts-editor ED-001 phase E4 (the same idea with
+a human watching live).
+
+### 16.2 Contract
+
+- Every tool that TRANSFORMS AN EXISTING DOCUMENT grows a
+  **`track_changes: true`** parameter (default false).  The vocabulary's
+  session servers treat track_changes as a mode; this server is stateless per
+  call (§4), so here it is a per-call boolean — a deliberate, documented
+  divergence in shape, not in name.
+- Attribution: revisions carry `w:author` = the `author` parameter if given,
+  else the server-wide `--track-changes-author` (default "docx4j-mcp"), and
+  `w:date` = now.  The author string is data supplied by the client;
+  it proves nothing (16.5).
+- The result says what was marked: text plus
+  `meta.track_changes: {author, insertions, deletions}`.  Zero marks is a
+  reportable outcome, not an error (the operation changed nothing).
+- Applies to: `fill_template` first (the filled-in values arrive as
+  insertions the reviewer can step through); every future in-place editing
+  tool (`edit`, `insert`, `delete`, `replace_text`, `set_style`,
+  `set_format`, `insert_ooxml` — vocabulary §4, addresses §3) is BORN with
+  the parameter.  Explicitly excluded: `anonymize` (its point is
+  irreversibility; a redline would carry the original text) and the
+  conversion tools (nothing to review).  `compare` (mcp/compare-tool) emits
+  its marked-up docx with the same attribution conventions, but its author
+  defaults to naming the compared revisions, not the agent.
+- The consuming half stays as specified: `accept_tracked_changes` /
+  `reject_tracked_changes` (§3 phase 4 table), default scope `all`, an
+  address narrowing it once addresses exist.
+
+### 16.3 Mechanism
+
+Phase TC-1 is DIFF-BASED, because the primitive already exists:
+`org.docx4j.diff.Differencer.diff(newer, older, result, author, date, ...)`
+(docx4j-diffx) emits w:ins/w:del with the attribution we need.  The tool
+clones the package (deepCopyFast) before operating, runs the ordinary
+operation, diffs old→new at Body level, and saves the redline as the output.
+Costs to measure and record here: diff fidelity (granularity of replacements,
+tables, numbering), performance on large documents, and whether headers/
+footers need separate passes.  Where diff granularity disappoints for a
+specific tool (likely fill_template: a whole repeated table row should be one
+insertion, not many), phase TC-3 moves that tool to DIRECT EMISSION —
+wrapping its own edits in w:ins/w:del at the point it makes them — which for
+fill_template means binding-pathway work in docx4j-core, i.e. a docx4j-side
+CR this repo would depend on (that engine work belongs to the docx4j
+session/repo, recorded as a dependency in the portfolio registry, not done
+here).
+
+An invariant gives the whole feature a cheap correctness test: fill with
+`track_changes: true`, accept all revisions (the consuming tool), and the
+result must equal the plain `track_changes: false` fill.
+
+### 16.4 Phases
+
+- **TC-1** (S-M): plumbing (`author` param, `--track-changes-author`,
+  meta counts) + `fill_template` via the diff pathway; the accept-all
+  invariant test; findings on diffx fidelity recorded here.
+- **TC-2** (S): reasoning as comments — an optional `note` parameter on the
+  same tools: a w:comment anchored on the changed range, attributed like the
+  revisions, carrying the agent's stated rationale.  (Vocabulary §4's
+  `comment` verb is the editing-server generalisation; `note` here is the
+  whole-operation special case.)
+- **TC-3** (M, only where TC-1 fidelity disappoints): direct emission for
+  fill_template (docx4j-core binding pathway dependency, see 16.3).
+- In-place editing tools are NOT a phase here: when that work is specified
+  (its own CR section, per §7), each tool arrives with `track_changes` from
+  day one.
+
+### 16.5 Risks / open questions
+
+- **Attribution is a claim, not a proof.**  `w:author="docx4j-mcp"` is
+  writable by anyone; the value is workflow (reviewability), not provenance.
+  Do not oversell it; the website page should say "review in Word", never
+  "audit trail".
+- **Diffx fidelity** is the load-bearing unknown; TC-1's findings decide how
+  much of TC-3 is needed.  If body-level diff proves too coarse for real
+  templates, TC-1 still ships behind the parameter default (false) and says
+  so in the result.
+- **Reviewer ergonomics**: hundreds of tiny revisions are worse than none.
+  TC-1 should coalesce adjacent runs where diffx allows it, and report the
+  count so the agent can warn.
+- **`author` collisions**: a template may already contain revisions by other
+  authors; the tools must leave those untouched (accept/reject default `all`
+  therefore needs an `author` filter before TC-1 ships alongside them —
+  noted for the accept/reject implementation).
 
