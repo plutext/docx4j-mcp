@@ -772,4 +772,10 @@ milestone #28 — and behaviourally here; details in
   a maintainer-promised compatibility mode; and there is no committed 2.2
   date.  Revisit when milestone 2.2 ships; the migration surface (types
   and constants 2026-07-28 removes) is listed in mcp_strategy.md §0.1.
+- Scope of the verification: the SERVER side of the dual-era handshake is
+  verified (we answer the probe the way the fallback expects).  The CLIENT
+  side is untested by anyone — no 2026-07-28 Java client exists, and the
+  SDK's own client has no probe path — so if a modern-only client ever
+  fails against this server, that is the client's missing fallback, not a
+  bug here.  Written down now so it isn't filed as ours later.
 
