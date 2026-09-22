@@ -5,9 +5,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 docx4j-mcp is a stdio MCP server exposing docx4j's engine (template describe/fill, docx→PDF/HTML/Markdown,
 Markdown/HTML→docx, text extraction) to AI agents.  The design, tool surface, phasing and per-phase findings
 are in `CR-mcp-server.md`; read the relevant section before changing behaviour, and record findings there.
-Phases 0-3 are done (v0.1.0 shipped 2026-09-03, live in the official MCP registry as
-`io.github.plutext/docx4j-mcp`).  Phase 4 (extended tools, including the MergeDocx licence gate and the
-`paginate` tool for docx4j CR-012) is gated on adoption signals; phase 5 (HTTP transport) on demand.
+Phases 0-3 are done (v0.2.0, docx4j 17.1.0, live in the official MCP registry as
+`io.github.plutext/docx4j-mcp`).  Phase 4 is un-gated per tool (CR §7, 2026-09-23): anonymize, compare,
+tracked changes and `paginate` (docx4j CR-012) are ready; `merge_documents` stays deferred on the CR §5
+licence-keying decision.  Phase 5 (HTTP transport) remains gated on demand.
 
 ## Commands
 
