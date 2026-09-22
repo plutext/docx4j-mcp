@@ -1,6 +1,6 @@
 # CR: docx4j MCP server (expose the engine to AI agents via Model Context Protocol)
 
-Status: SHIPPED — v0.1.0 (docx4j 17.0.4) released and live in the official MCP registry (2026-09-03); phase 4 gated on adoption signals (§7)
+Status: SHIPPED — v0.2.0 (docx4j 17.1.0) live in the official MCP registry; phase 4 un-gated per tool 2026-09-23 (§7; portfolio mcp_strategy.md §4)
 Scope: a NEW satellite artifact (`docx4j-mcp`) — no changes to
 docx4j-core beyond what the tools need; lives in its own repo, `plutext/docx4j-mcp`
 (decided 2026-09-01, §7).  Phase 0 findings are in §10.
@@ -234,11 +234,31 @@ for this channel — flagging, not designing, here.
   inherent to any reader tool — document it, and keep results clearly data-
   shaped (no instructions in our own result phrasing).
 - **Maintenance load**: a new user-facing product for a solo-maintained
-  project.  Phases 1-3 are deliberately small; adoption signals (registry
-  stats, issues) should gate phases 4-5.
-- **Does anyone come?**  Cheap to find out: the phase 3 deliverable includes a
-  website page and registry listing; if fill_template gets no traction in a
-  couple of months, stop at phase 3.
+  project.  Phases 1-3 are deliberately small.  Phase 5 (HTTP) remains gated
+  on demonstrated demand.  Phase 4 is NO LONGER blanket-gated on adoption
+  (changed 2026-09-23, ../docx4j-portfolio/docs/mcp_strategy.md §4): the gate
+  held back precisely the differentiated tools — anonymize, compare, tracked
+  changes, paginate, the tools no competitor has (strategy §1) — while what
+  shipped is the conversions every competitor also has, so the hoped-for
+  adoption signal could never arrive from the gated side.  Per-tool position
+  (mirrored in the portfolio registry): anonymize / compare /
+  tracked-changes / paginate are un-gated and ready; merge_documents stays
+  deferred, gated on the §5 licence-keying decision, not on adoption.
+- **Does anyone come?**  Originally a stop-at-phase-3 trigger; retired as a
+  decision rule because it was written against a signal nobody is measuring —
+  no adoption data for v0.1.0 or v0.2.0 has been gathered at all.  It remains
+  an open item to MEASURE (registry/aggregator stats, GitHub traffic and
+  clones, issues), now informing prioritisation within phase 4 rather than
+  whether phase 4 happens.
+- **Two live proposals, not yet decided** (2026-09-23, mcp_strategy.md
+  §1.1-1.2; DECISION NEEDED jharrop): (a) tracked changes as the agent's
+  OUTPUT channel — every mutating tool gains a `track_changes` mode returning
+  its edits as w:ins/w:del attributed to the agent, so a human reviews in
+  Word instead of receiving a silently rewritten file; the current phase 4
+  rows cover only the consuming half (accept/reject), and this needs its own
+  CR section if adopted.  (b) a validate/repair tool over the malformed docx
+  files other generators (python-docx et al) produce — machinery exists in
+  docx4j; in no CR yet.
 
 ## 8. Phases
 
@@ -301,8 +321,9 @@ for this channel — flagging, not designing, here.
    7. **Release mechanics**: version from the pom; CI builds jar + mcpb +
       image on tag, computes the SHA-256, publishes the registry entry.
       Gated on docx4j 17.0.4 and ImportXHTML 17.0.4 on Central (§2).
-4. **Extended tools** (M): tracked changes, anonymize, compare, the MergeDocx
-   licence gate; resources/prompts if warranted.
+4. **Extended tools** (M): tracked changes, anonymize, compare, paginate, the
+   MergeDocx licence gate; resources/prompts if warranted.  Un-gated per tool
+   2026-09-23 (§7); tracked per tool in the portfolio registry.
 5. **Hosted/HTTP** (M-L, only on demonstrated demand): streamable HTTP
    transport, uploads, auth, hardening (§6).
 
