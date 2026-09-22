@@ -7,6 +7,13 @@ Word (.docx) documents from Claude Desktop, Claude Code, or any MCP client.
 **Engine: docx4j 17.1.0** (the server versions independently; the bundled docx4j
 version is in the pom, the server's startup log, and its MCP instructions).
 
+**MCP protocol: 2025-11-25** (Java SDK 2.0.1, the newest available).  Clients
+speaking the 2026-07-28 spec work if they implement its dual-era fallback: the
+`server/discover` probe gets a clean JSON-RPC `-32601` and the client falls
+back to `initialize` (verified over stdio).  A modern-only client with no
+fallback cannot connect until the SDK's 2026-07-28 support (milestone 2.2)
+ships, at which point this server will migrate.
+
 **Status: phase 3** — all tools work over stdio against released docx4j 17.0.4;
 packaged as a runnable jar, an `.mcpb` bundle, an OCI image and a Claude Code
 plugin.  The plan, tool surface and phasing are in [CR-mcp-server.md](CR-mcp-server.md).

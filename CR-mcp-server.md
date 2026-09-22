@@ -742,3 +742,34 @@ result must equal the plain `track_changes: false` fill.
   competitor that publishes its limits is more credible than the one that
   claims completeness; be the first kind.
 
+## 17. Protocol version status (2026-09-23)
+
+Finding, not a change (verified by the portfolio session from primary
+sources — java-sdk CHANGELOG, ProtocolVersions.java, registry constants.go,
+milestone #28 — and behaviourally here; details in
+../docx4j-portfolio/docs/mcp_strategy.md §0.1):
+
+- docx4j-mcp is a **2025-11-25 spec implementation**: MCP Java SDK 2.0.1 is
+  the newest release of any line (2026-08-19) and implements exactly that;
+  the SDK contains no `server/discover` and no 2026-07-28 constants.
+- The 2026-07-28 **final** spec removed the initialize handshake and
+  Mcp-Session-Id and added a mandatory `server/discover`.  A conforming
+  dual-era client probes `server/discover` and falls back to `initialize`
+  on any error that is not a recognised modern error.  **Verified against
+  this server's shaded jar over stdio**: `server/discover` before
+  initialize returns JSON-RPC `-32601 Method not found`, after which
+  `initialize` and `tools/list` proceed normally — so dual-era clients keep
+  working.  Only a modern-only client with no fallback fails (the spec's
+  own compatibility matrix marks that row "Fails").
+- SDK 2.0.1's clean -32601 (PR #800) is what makes the fallback work;
+  earlier lines returned HTTP 500 on the HTTP transport.  The pin is doing
+  real work — do not downgrade.
+- 2026-07-28 support is **planned only** in the SDK (milestone 2.2, open,
+  no committed date; the design PR was closed unmerged).  Decision recorded
+  in the portfolio registry: **wait for SDK 2.2**; hand-rolling
+  `server/discover` against an SDK about to own it is the worst option.
+- Caveats carried honestly: the -32601 fallback is what the code does, not
+  a maintainer-promised compatibility mode; and there is no committed 2.2
+  date.  Revisit when milestone 2.2 ships; the migration surface (types
+  and constants 2026-07-28 removes) is listed in mcp_strategy.md §0.1.
+
