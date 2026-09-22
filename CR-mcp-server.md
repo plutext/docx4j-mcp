@@ -258,7 +258,14 @@ for this channel — flagging, not designing, here.
   rows cover only the consuming half (accept/reject), and this needs its own
   CR section if adopted.  (b) a validate/repair tool over the malformed docx
   files other generators (python-docx et al) produce — machinery exists in
-  docx4j; in no CR yet.
+  docx4j; in no CR yet.  If either proposal grows into in-place editing,
+  adopt the three content-address forms of
+  ../docx4j-portfolio/docs/mcp_tool_vocabulary.md §7 (body/3, w14:paraId,
+  {contains}); the eight shipped tool names stay frozen regardless.  The
+  standalone update_toc tool floated in §15 stays speculative CR prose
+  (deliberately untracked in the portfolio registry): the converter option
+  covers the agent workflow, and a thin Docx4J.updateToc wrapper can be added
+  the day someone asks.
 
 ## 8. Phases
 
